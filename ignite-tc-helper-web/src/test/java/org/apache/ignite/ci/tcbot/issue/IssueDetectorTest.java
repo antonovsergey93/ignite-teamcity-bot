@@ -84,18 +84,6 @@ public class IssueDetectorTest {
         return chain;
     }
 
-
-    @NotNull public ChainAtServerTracked trackedChain(String suiteId) {
-        ChainAtServerTracked chain = new ChainAtServerTracked();
-
-        chain.serverId = SRV_ID;
-        chain.branchForRest = ITeamcity.DEFAULT;
-        chain.suiteId = suiteId;
-
-        return chain;
-    }
-
-
     @Test
     public void testDetector() throws IOException {
         String brachName = "masterTest";

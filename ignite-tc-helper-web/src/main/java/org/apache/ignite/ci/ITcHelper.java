@@ -46,7 +46,6 @@ public interface ITcHelper extends ITcServerProvider {
 
     String primaryServerId();
 
-
     /** */
     void setServerAuthorizerCreds(ICredentialsProv creds);
 

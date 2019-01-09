@@ -17,8 +17,6 @@
 
 package org.apache.ignite.ci.issue;
 
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -30,8 +28,6 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.ci.db.TcHelperDb;
 import org.apache.ignite.ci.tcbot.issue.IIssuesStorage;
-import org.apache.ignite.ci.tcbot.issue.IIssuesStorage;
-import org.apache.ignite.ci.user.TcHelperUser;
 
 public class IssuesStorage implements IIssuesStorage {
     public static final String BOT_DETECTED_ISSUES = "botDetectedIssues";
