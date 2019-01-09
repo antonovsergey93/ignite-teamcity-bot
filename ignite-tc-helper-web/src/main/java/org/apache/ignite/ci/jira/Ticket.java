@@ -15,11 +15,34 @@
  * limitations under the License.
  */
 
-package org.apache.ignite.ci.tcbot;
+package org.apache.ignite.ci.jira;
 
-public class TcBotSystemProperties {
-    public static final String DEV_MODE = "DEV_MODE";
-    @Deprecated
-    public static final String TEAMCITY_BOT_RECORDER_URLS = "teamcity.bot.recorder.urls";
-    public static final String TEAMCITY_BOT_RECORDER = "teamcity.bot.recorder";
+/**
+ * See example of GSON here
+ * https://issues.apache.org/jira/rest/api/2/issue/IGNITE-123
+ */
+public class Ticket {
+    /** Id. */
+    public long id;
+
+    /** Ticket full name like "IGNITE-123". */
+    public String key;
+
+    /** Fields. */
+    public Fields fields;
+
+    /**
+     * @param ticketTemplate Ticket name template.
+     * @return Ignite id (like 123 in IGNITE-123).
+     */
+    public int igniteId(String ticketTemplate) {
+        return Integer.valueOf(key.substring(ticketTemplate.length()));
+    }
+
+    /**
+     * @return Ticket status (open, resolved, etc);
+     */
+    public String status() {
+        return fields.status.name;
+    }
 }

@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import org.apache.ignite.ci.tcmodel.result.tests.TestRef;
 
 /**
- * Mute target (e.g. muted test).
+ * Mute additional information. Contains what was muted (tests, problems).
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 public class MuteTarget {

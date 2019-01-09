@@ -54,32 +54,35 @@
             $.ajax({
                     url: "rest/tracked/mutes?serverId=apache",
                     success: function (result) {
-                        showVisasTable(result);
+                        showTable(result);
                     },
                     error: showErrInLoadStatus
                 }
             );
         }
 
-        function showVisasTable(result) {
+        function showTable(result) {
             // Debug info
             // if (isDefinedAndFilled(result)) {
             //     result.sort((a, b) => (a.id < b.id) ? -1 : ((a.id > b.id) ? 1 : 0));
             //     console.log(result);
             // }
 
-            let visasTable = $('#visasTable');
+            let mutes = separateMutedTests(result);
+
+            let table = $('#table');
 
             let testNameMatcher = new RegExp("\\.(\\w+\\d*):.*\\.([a-z][$\\w]+\\w+\\d*)");
             let testNameMatcher2 = new RegExp("(\\w+\.Test\\w+\\d*)$");
             let suiteNameMatcher2 = new RegExp("(.*):");
             let ticketMatcher = new RegExp("https:\\/\\/issues.apache.org\\/jira\\/browse\\/(IGNITE-\\d+)");
 
-            visasTable.dataTable().fnDestroy();
+            table.dataTable().fnDestroy();
 
-            visasTable.DataTable({
-                data: result,
+            table.DataTable({
+                data: mutes,
                 "iDisplayLength": 30, //rows to be shown by default
+                "order": [[ 0, 'asc' ], [ 1, 'asc' ]],
                 stateSave: true,
                 columnDefs: [
                     {
@@ -167,6 +170,13 @@
                         }
                     },
                     {
+                        title: "Status",
+                        width: 50,
+                        "data": function (data, type, row, meta) {
+                            return data.ticketStatus;
+                        }
+                    },
+                    {
                         title: "Mute Date",
                         "data": function (data, type, row, meta) {
                             return data.assignment.timestamp;
@@ -185,9 +195,34 @@
                         }
                     }
                 ]
-            })
-                .order( [[ 0, 'asc' ], [ 1, 'asc' ]] )
-                .draw();
+            });
+        }
+
+        function separateMutedTests(result) {
+            let mutes = [];
+
+            for (let mute of result) {
+                if (!isDefinedAndFilled(mute.target.test) || mute.target.test.length === 1) {
+                    mutes.push(mute);
+
+                    continue;
+                }
+
+                for (let t of mute.target.test) {
+                    let separateTest = {
+                        id: mute.id,
+                        assignment: mute.assignment,
+                        scope: mute.scope,
+                        ticketStatus: mute.ticketStatus
+                    };
+
+                    separateTest.target = {test: [t]};
+
+                    mutes.push(separateTest);
+                }
+            }
+
+            return mutes;
         }
     </script>
 </head>
@@ -195,9 +230,10 @@
 <br>
 <div id="loadStatus"></div>
 <br>
-<table id="visasTable" class="row-border" style="width:100%">
+<table id="table" class="row-border" style="width:100%">
     <thead>
     <tr class="ui-widget-header ">
+        <th>.</th>
         <th>.</th>
         <th>.</th>
         <th>.</th>

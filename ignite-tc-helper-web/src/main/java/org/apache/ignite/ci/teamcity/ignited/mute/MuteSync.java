@@ -48,6 +48,8 @@ public class MuteSync {
      * Refresh mutes for given project.
      *
      * @param projectId Project id.
+     * @param srvIdMaskHigh Server id mask high.
+     * @param conn TeamCity connection.
      * @return Message with loading result.
      */
     @MonitoredTask(name = "Actualize Mute", nameExtArgsIndexes = {0})
@@ -96,7 +98,7 @@ public class MuteSync {
 
         for (MuteInfo mute : page) {
             while (checkId++ != mute.id) {
-                if (muteDao.remove(srvIdMaskHigh, mute.id))
+                if (muteDao.remove(srvIdMaskHigh, checkId - 1))
                     rmv++;
             }
         }

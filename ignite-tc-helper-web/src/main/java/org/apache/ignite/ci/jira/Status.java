@@ -15,11 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.ignite.ci.tcbot;
+package org.apache.ignite.ci.jira;
 
-public class TcBotSystemProperties {
-    public static final String DEV_MODE = "DEV_MODE";
-    @Deprecated
-    public static final String TEAMCITY_BOT_RECORDER_URLS = "teamcity.bot.recorder.urls";
-    public static final String TEAMCITY_BOT_RECORDER = "teamcity.bot.recorder";
+/**
+ * Status for Jira ticket.
+ */
+public class Status {
+    /** Status text (open, resolved, etc). */
+    public String name;
+
+    /**
+     * @param name Name.
+     */
+    public Status(String name) {
+        this.name = name;
+    }
 }

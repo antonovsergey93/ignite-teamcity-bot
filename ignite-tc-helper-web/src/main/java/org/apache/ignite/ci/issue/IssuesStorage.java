@@ -19,16 +19,17 @@ package org.apache.ignite.ci.issue;
 
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.ignite.Ignite;
-import org.apache.ignite.IgniteCache;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.cache.Cache;
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.ArrayList;
-import java.util.List;
-
+import org.apache.ignite.Ignite;
+import org.apache.ignite.IgniteCache;
 import org.apache.ignite.ci.db.TcHelperDb;
+import org.apache.ignite.ci.tcbot.issue.IIssuesStorage;
 import org.apache.ignite.ci.tcbot.issue.IIssuesStorage;
 import org.apache.ignite.ci.user.TcHelperUser;
 

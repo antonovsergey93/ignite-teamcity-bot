@@ -42,8 +42,21 @@ public interface IJiraIntegration {
     public Visa notifyJira(String srvId, ICredentialsProv prov, String buildTypeId, String branchForTc,
         String ticket);
 
+    /**
+     * Produce wrapper for collection of Jira tickets for given server.
+     *
+     * @param srvId Server id.
+     * @param prov Prov.
+     * @param ticketId Ticket id.
+     * @return Jira tickets.
+     */
+    public Tickets getTickets(String srvId, ICredentialsProv prov, String ticketId);
+
     /** */
     public String jiraUrl();
+
+    /** */
+    public String ticketTemplate();
 
     /** */
     public void init(String srvId);
