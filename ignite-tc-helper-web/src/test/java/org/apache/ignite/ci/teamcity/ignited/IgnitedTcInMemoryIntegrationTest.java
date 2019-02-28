@@ -44,7 +44,6 @@ import org.apache.ignite.ci.ITeamcity;
 import org.apache.ignite.ci.analysis.SuiteInBranch;
 import org.apache.ignite.ci.analysis.TestInBranch;
 import org.apache.ignite.ci.db.TcHelperDb;
-import org.apache.ignite.ci.di.MonitoredTask;
 import org.apache.ignite.ci.di.scheduler.DirectExecNoWaitScheduler;
 import org.apache.ignite.ci.di.scheduler.IScheduler;
 import org.apache.ignite.ci.jira.pure.IJiraIntegrationProvider;
@@ -228,7 +227,7 @@ public class IgnitedTcInMemoryIntegrationTest {
 
                 if (url.contains("app/rest/latest/projects/" + projectId))
                     return getClass().getResourceAsStream("/" + projectId +
-                            (buildTypeRmv.get() ? "_v2" : "") + ".xml");
+                        (buildTypeRmv.get() ? "_v2" : "") + ".xml");
 
                 if ((url.contains("app/rest/latest/buildTypes/id:" + runAll)) && !runAllRmv.get())
                     return getClass().getResourceAsStream("/" + runAll + ".xml");
@@ -254,7 +253,7 @@ public class IgnitedTcInMemoryIntegrationTest {
 
         List<String> buildTypes = srv.getCompositeBuildTypesIdsSortedByBuildNumberCounter(projectId);
 
-        assertEquals(buildTypes.size(),1);
+        assertEquals(buildTypes.size(), 1);
 
         assertEquals(buildTypes.get(0), runAll);
 
@@ -574,7 +573,6 @@ public class IgnitedTcInMemoryIntegrationTest {
         assertEquals(0.5, cache1HistAllBranch.getFailRate(), 0.05);
     }
 
-
     @Test
     public void testHistoryBackgroundUpdateWorks() {
         Injector injector = Guice.createInjector(new TeamcityIgnitedModule(), new IgniteAndSchedulerTestModule());
@@ -595,7 +593,6 @@ public class IgnitedTcInMemoryIntegrationTest {
         buildRefDao.init();
 
         final IStringCompactor c = injector.getInstance(IStringCompactor.class);
-
 
         final PrChainsProcessorTest tst = new PrChainsProcessorTest();
         tst.initBuildChainAndMasterHistory(c, btId, branch);
@@ -699,7 +696,7 @@ public class IgnitedTcInMemoryIntegrationTest {
     }
 
     @NotNull public List<BuildRef> printRefs(IStringCompactor c, List<BuildRefCompacted> running2) {
-        return running2.stream().map(bref->bref.toBuildRef(c)).collect(Collectors.toList());
+        return running2.stream().map(bref -> bref.toBuildRef(c)).collect(Collectors.toList());
     }
 
     /**

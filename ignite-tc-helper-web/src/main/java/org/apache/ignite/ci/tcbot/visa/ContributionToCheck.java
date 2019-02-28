@@ -17,11 +17,13 @@
 package org.apache.ignite.ci.tcbot.visa;
 
 /**
- * Short version of contribution status.
- * Full version is placed in {@link ContributionCheckStatus}.
+ * Short version of contribution status. Full version is placed in {@link ContributionCheckStatus}.
  */
 @SuppressWarnings("PublicField") public class ContributionToCheck {
-    /** Pr number. Positive value implies PR number, negative value is for JIRA ticket for PR-less contributions. */
+    /**
+     * Pr number. Negative value imples branch number (with appropriate prefix from GH config), value from {@link
+     * #tcBranchName}.
+     */
     public Integer prNumber;
 
     /** Pr title. */

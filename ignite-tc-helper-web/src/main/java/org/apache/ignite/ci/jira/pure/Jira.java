@@ -27,7 +27,6 @@ import org.apache.ignite.ci.tcbot.conf.IJiraServerConfig;
 import org.apache.ignite.ci.tcbot.conf.ITcBotConfig;
 import org.apache.ignite.ci.util.HttpUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,9 +60,9 @@ class Jira implements IJiraIntegration {
             String errMsg = "Exception happened during receiving JIRA tickets " +
                 "[url=" + url + ", errMsg=" + e.getMessage() + ']';
 
-            logger.error(errMsg);
+            logger.error(errMsg, e);
 
-            return new Tickets();
+            throw new IllegalStateException(errMsg, e);
         }
     }
 
@@ -92,29 +91,11 @@ class Jira implements IJiraIntegration {
     /** {@inheritDoc} */
     @AutoProfiling
     @Override public String postJiraComment(String ticket, String comment) throws IOException {
-        String jiraApiUrl = restApiUrl();
+        String jiraApiUrl = config().restApiUrl();
 
         String url = jiraApiUrl + "issue/" + ticket + "/comment";
 
         return HttpUtil.sendPostAsStringToJira(config().decodedHttpAuthToken(), url, "{\"body\": \"" + comment + "\"}");
-    }
-
-    /** {@inheritDoc} */
-    @Override @NotNull public String restApiUrl() {
-        String jiraUrl = config().getUrl();
-
-        if (isNullOrEmpty(jiraUrl))
-            throw new IllegalStateException("JIRA API URL is not configured for this server.");
-
-        StringBuilder apiUrl = new StringBuilder();
-
-        apiUrl.append(jiraUrl);
-        if (!jiraUrl.endsWith("/"))
-            apiUrl.append("/");
-
-        apiUrl.append("rest/api/2/");
-
-        return apiUrl.toString();
     }
 
     /**
@@ -122,6 +103,6 @@ class Jira implements IJiraIntegration {
      * @return Response as gson string.
      */
     public String sendGetToJira(String url) throws IOException {
-        return HttpUtil.sendGetToJira(config().decodedHttpAuthToken(), restApiUrl() + url);
+        return HttpUtil.sendGetToJira(config().decodedHttpAuthToken(), config().restApiUrl() + url);
     }
 }

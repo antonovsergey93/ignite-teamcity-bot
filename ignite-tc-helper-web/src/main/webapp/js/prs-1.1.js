@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 function drawTable(srvId, element) {
     let tableId = "serverContributions-" + srvId;
 
@@ -307,10 +323,10 @@ function formatContributionDetails(row, srvId) {
 
                 let select = $("#selectChain_" + prId);
 
-                select.change(function() {
-                    let pr = prs.get(prId),
-                        selectedOption = $("#selectChain_" + prId + " option:selected").text(),
-                        buildIsCompleted = select.val() === 'true';
+                select.change(function () {
+                    let pr = prs.get(prId);
+                    let selectedOption = $("#selectChain_" + prId + " option:selected").text();
+                    let buildIsCompleted = select.val() === 'true';
 
                     showContributionStatus(pr.get(selectedOption), prId, row, srvId, selectedOption, buildIsCompleted);
                 });
@@ -348,6 +364,14 @@ function repaintLater(srvId) {
     }, 3000);
 }
 
+/**
+ *
+ * @param status contribution status related to selected run-configuration.
+ * @param prId
+ * @param row
+ * @param srvId
+ * @param suiteIdSelected
+ */
 function showContributionStatus(status, prId, row, srvId, suiteIdSelected) {
     let tdForPr = $('#showResultFor' + prId);
 

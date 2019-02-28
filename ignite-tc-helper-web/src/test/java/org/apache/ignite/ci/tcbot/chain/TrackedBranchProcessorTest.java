@@ -27,8 +27,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.ignite.ci.ITeamcity;
 import org.apache.ignite.ci.conf.BranchTracked;
-import org.apache.ignite.ci.tcbot.conf.BranchesTracked;
 import org.apache.ignite.ci.conf.ChainAtServerTracked;
+import org.apache.ignite.ci.tcbot.conf.BranchesTracked;
 import org.apache.ignite.ci.teamcity.ignited.IStringCompactor;
 import org.apache.ignite.ci.teamcity.ignited.ITeamcityIgnitedProvider;
 import org.apache.ignite.ci.teamcity.ignited.SyncMode;
@@ -75,7 +75,7 @@ public class TrackedBranchProcessorTest {
     /** */
     @Before
     public void initBuilds() {
-        final TeamcityIgnitedProviderMock instance = (TeamcityIgnitedProviderMock) injector.getInstance(ITeamcityIgnitedProvider.class);
+        final TeamcityIgnitedProviderMock instance = (TeamcityIgnitedProviderMock)injector.getInstance(ITeamcityIgnitedProvider.class);
         instance.addServer(SRV_ID, apacheBuilds);
     }
 
@@ -156,7 +156,7 @@ public class TrackedBranchProcessorTest {
     }
 
     public Optional<TestFailure> findTestFailure(SuiteCurrentStatus suiteFails, String name) {
-        return suiteFails.testFailures.stream().filter(tf -> tf.name.equals(name)) .findAny();
+        return suiteFails.testFailures.stream().filter(tf -> tf.name.equals(name)).findAny();
     }
 
 }

@@ -17,6 +17,11 @@
 
 package org.apache.ignite.ci.user;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.ws.rs.container.ContainerRequestContext;
 import org.apache.ignite.ci.tcbot.user.UserAndSessionsStorage;
 import org.apache.ignite.ci.tcmodel.user.User;
 import org.apache.ignite.ci.teamcity.pure.ITcLogin;
@@ -27,15 +32,13 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.ws.rs.container.ContainerRequestContext;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static junit.framework.TestCase.*;
-import static org.mockito.ArgumentMatchers.*;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertNull;
+import static junit.framework.TestCase.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
@@ -49,7 +52,7 @@ public class LoginAuthTest {
         Login login = createLogin();
 
         LoginResponse login1
-                = login.doLogin("user", "password", storage, "public", Collections.emptySet(), tcLogin);
+            = login.doLogin("user", "password", storage, "public", Collections.emptySet(), tcLogin);
         assertNotNull(login1.fullToken);
 
         AuthenticationFilter authenticationFilter = new AuthenticationFilter();
@@ -74,9 +77,8 @@ public class LoginAuthTest {
         doAnswer(i -> {
             UserSession argument = i.getArgument(1);
             sessionRef.set(argument);
-            return (Void) null;
+            return (Void)null;
         }).when(storage).putSession(anyString(), any(UserSession.class));
-
 
         AtomicReference<TcHelperUser> userRef = new AtomicReference<>();
         when(storage.getUser(anyString())).thenAnswer((i) -> userRef.get());
@@ -85,12 +87,11 @@ public class LoginAuthTest {
 
             userRef.set(argument);
 
-            return (Void) null;
+            return (Void)null;
         }).when(storage).putUser(anyString(), any(TcHelperUser.class));
 
         return storage;
     }
-
 
     private ContainerRequestContext mockCtxWithParams() {
         ContainerRequestContext ctx = Mockito.mock(ContainerRequestContext.class);
@@ -100,7 +101,7 @@ public class LoginAuthTest {
 
         doAnswer(i -> {
             atts.put(i.getArgument(0), i.getArgument(1));
-            return (Void) null;
+            return (Void)null;
         }).when(ctx).setProperty(anyString(), any(Object.class));
 
         return ctx;
@@ -124,7 +125,7 @@ public class LoginAuthTest {
 
         assertTrue(authenticationFilter.authenticate(ctx, loginResponse.fullToken, storage));
 
-        ICredentialsProv creds = (ICredentialsProv) ctx.getProperty(ICredentialsProv._KEY);
+        ICredentialsProv creds = (ICredentialsProv)ctx.getProperty(ICredentialsProv._KEY);
 
         assertNotNull(creds);
 
@@ -134,7 +135,6 @@ public class LoginAuthTest {
 
         assertEquals(password, creds.getPassword(srvId));
     }
-
 
     @Test
     public void testAuthFailedWithBrokenToken() {
@@ -146,7 +146,7 @@ public class LoginAuthTest {
 
         int sepIdx = fullToken.indexOf(':');
         String brokenToken = fullToken.substring(0, sepIdx + 1) +
-                Base64Util.encodeBytesToString(new byte[128 / 8]);
+            Base64Util.encodeBytesToString(new byte[128 / 8]);
         assertNotNull(fullToken);
 
         AuthenticationFilter authenticationFilter = new AuthenticationFilter();

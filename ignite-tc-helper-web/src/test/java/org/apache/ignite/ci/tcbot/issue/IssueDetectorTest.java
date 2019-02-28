@@ -29,9 +29,9 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.ignite.ci.ITeamcity;
 import org.apache.ignite.ci.conf.BranchTracked;
-import org.apache.ignite.ci.tcbot.conf.BranchesTracked;
 import org.apache.ignite.ci.conf.ChainAtServerTracked;
 import org.apache.ignite.ci.tcbot.chain.MockBasedTcBotModule;
+import org.apache.ignite.ci.tcbot.conf.BranchesTracked;
 import org.apache.ignite.ci.tcmodel.result.tests.TestOccurrenceFull;
 import org.apache.ignite.ci.teamcity.ignited.IStringCompactor;
 import org.apache.ignite.ci.teamcity.ignited.ITeamcityIgnitedProvider;
@@ -60,7 +60,6 @@ public class IssueDetectorTest {
     /** Builds emulated storage. */
     private Map<Integer, FatBuildCompacted> apacheBuilds = new ConcurrentHashMap<>();
 
-
     /** Config Branches tracked. */
     private BranchesTracked branchesTracked = new BranchesTracked();
     /**
@@ -84,7 +83,6 @@ public class IssueDetectorTest {
 
         return chain;
     }
-
 
     @Test
     public void testDetector() throws IOException {

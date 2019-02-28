@@ -36,6 +36,9 @@ import org.apache.ignite.ci.github.pure.IGitHubConnection;
 import org.apache.ignite.ci.github.pure.IGitHubConnectionProvider;
 import org.apache.ignite.ci.jira.pure.IJiraIntegration;
 import org.apache.ignite.ci.jira.pure.IJiraIntegrationProvider;
+import org.apache.ignite.ci.tcbot.conf.IJiraServerConfig;
+import org.apache.ignite.ci.tcbot.conf.ITcBotConfig;
+import org.apache.ignite.ci.teamcity.ignited.ITeamcityIgnitedProvider;
 import org.apache.ignite.ci.user.ICredentialsProv;
 import org.apache.ignite.ci.tcbot.visa.TcBotTriggerAndSignOffService;
 import org.apache.ignite.ci.web.CtxListener;
@@ -60,7 +63,7 @@ public class TriggerBuilds {
     @GET
     @Path("trigger")
     public SimpleResult triggerBuilds(
-        @Nullable @QueryParam("serverId") String srvId,
+        @Nullable @QueryParam("serverId") String srvCode,
         @Nullable @QueryParam("branchName") String branchForTc,
         @Nonnull @QueryParam("parentSuiteId") String parentSuiteId,
         @Nonnull @QueryParam("suiteIdList") String suiteIdList,
@@ -68,24 +71,23 @@ public class TriggerBuilds {
         @Nullable @QueryParam("observe") Boolean observe,
         @Nullable @QueryParam("ticketId") String ticketId
     ) {
+        ICredentialsProv prov = ICredentialsProv.get(req);
+        Injector injector = CtxListener.getInjector(ctx);
 
-        final ICredentialsProv prov = ICredentialsProv.get(req);
-
-        if (!prov.hasAccess(srvId))
-            throw ServiceUnauthorizedException.noCreds(srvId);
+        injector.getInstance(ITeamcityIgnitedProvider.class).checkAccess(srvCode, prov);
 
         if (isNullOrEmpty(suiteIdList))
             return new SimpleResult("Error: nothing to run.");
 
-        String jiraRes = CtxListener.getInjector(ctx)
+        String jiraRes = injector
             .getInstance(TcBotTriggerAndSignOffService.class)
-            .triggerBuildsAndObserve(srvId, branchForTc, parentSuiteId, suiteIdList, top, observe, ticketId, prov);
+            .triggerBuildsAndObserve(srvCode, branchForTc, parentSuiteId, suiteIdList, top, observe, ticketId, prov);
 
         return new SimpleResult("Tests started." + (!jiraRes.isEmpty() ? "<br>" + jiraRes : ""));
     }
 
     /**
-     * @param srvId Server id.
+     * @param srvCode Server id.
      * @param branchForTc Branch for tc.
      * @param suiteId Suite id.
      * @param ticketId Ticket full name with IGNITE- prefix.
@@ -93,39 +95,43 @@ public class TriggerBuilds {
     @GET
     @Path("commentJira")
     public SimpleResult commentJira(
-        @Nullable @QueryParam("serverId") String srvId,
+        @Nullable @QueryParam("serverId") String srvCode,
         @Nullable @QueryParam("branchName") String branchForTc,
         @Nullable @QueryParam("suiteId") String suiteId,
         @Nullable @QueryParam("ticketId") String ticketId
     ) {
-        final ICredentialsProv prov = ICredentialsProv.get(req);
+        ICredentialsProv prov = ICredentialsProv.get(req);
 
-        if (!prov.hasAccess(srvId))
-            throw ServiceUnauthorizedException.noCreds(srvId);
+        Injector injector = CtxListener.getInjector(ctx);
 
-        return CtxListener.getInjector(ctx)
+        injector.getInstance(ITeamcityIgnitedProvider.class).checkAccess(srvCode, prov);
+
+        return injector
             .getInstance(TcBotTriggerAndSignOffService.class)
-            .commentJiraEx(srvId, branchForTc, suiteId, ticketId, prov);
+            .commentJiraEx(srvCode, branchForTc, suiteId, ticketId, prov);
     }
 
     @GET
     @Path("integrationUrls")
-    public Set<ServerIntegrationLinks> getIntegrationUrls(@NotNull @QueryParam("serverIds") String srvIds) {
-        final ICredentialsProv prov = ICredentialsProv.get(req);
+    public Set<ServerIntegrationLinks> getIntegrationUrls(@NotNull @QueryParam("serverIds") String srvCodes) {
+        ICredentialsProv prov = ICredentialsProv.get(req);
 
-        String[] srvIds0 = srvIds.split(",");
+        Injector injector = CtxListener.getInjector(ctx);
 
-        return Arrays.stream(srvIds0).map(srvId -> {
-            if (!prov.hasAccess(srvId))
+        ITcBotConfig cfg = injector.getInstance(ITcBotConfig.class);
+        ITeamcityIgnitedProvider tcIgnProv = injector.getInstance(ITeamcityIgnitedProvider.class);
+
+        String[] srvCodesArr = srvCodes.split(",");
+
+        return Arrays.stream(srvCodesArr).map(srvCode -> {
+            if (!tcIgnProv.hasAccess(srvCode, prov))
                 return null;
 
-            Injector injector = CtxListener.getInjector(ctx);
+            IGitHubConnection gh = injector.getInstance(IGitHubConnectionProvider.class).server(srvCode);
 
-            IJiraIntegration jira = injector.getInstance(IJiraIntegrationProvider.class).server(srvId);
+            IJiraServerConfig jiraCfg = cfg.getJiraConfig(srvCode);
 
-            IGitHubConnection gh = injector.getInstance(IGitHubConnectionProvider.class).server(srvId);
-
-            return new ServerIntegrationLinks(srvId, gh.gitApiUrl(), jira.restApiUrl());
+            return new ServerIntegrationLinks(srvCode, gh.gitApiUrl(), jiraCfg.restApiUrl());
         }).filter(Objects::nonNull).collect(Collectors.toSet());
     }
 }

@@ -41,13 +41,14 @@ import org.apache.ignite.ci.github.GitHubUser;
 import org.apache.ignite.ci.github.PullRequest;
 import org.apache.ignite.ci.github.ignited.IGitHubConnIgnited;
 import org.apache.ignite.ci.github.ignited.IGitHubConnIgnitedProvider;
-import org.apache.ignite.ci.jira.pure.Ticket;
 import org.apache.ignite.ci.jira.ignited.IJiraIgnited;
 import org.apache.ignite.ci.jira.ignited.IJiraIgnitedProvider;
+import org.apache.ignite.ci.jira.pure.Ticket;
 import org.apache.ignite.ci.observer.BuildObserver;
 import org.apache.ignite.ci.observer.BuildsInfo;
 import org.apache.ignite.ci.tcbot.ITcBotBgAuth;
 import org.apache.ignite.ci.tcbot.chain.PrChainsProcessor;
+import org.apache.ignite.ci.tcbot.conf.IGitHubConfig;
 import org.apache.ignite.ci.tcbot.conf.IJiraServerConfig;
 import org.apache.ignite.ci.tcbot.conf.ITcBotConfig;
 import org.apache.ignite.ci.tcmodel.mute.MuteInfo;
@@ -83,10 +84,8 @@ import static org.apache.ignite.ci.util.XmlUtil.xmlEscapeText;
 import static org.apache.ignite.ci.web.rest.parms.FullQueryParams.DEFAULT_TRACKED_BRANCH_NAME;
 
 /**
- * TC Bot Visa Facade.
- * Provides method for TC Bot Visa obtaining.
- * Contains features for adding comment to the ticket based on latest state.
- *
+ * TC Bot Visa Facade. Provides method for TC Bot Visa obtaining. Contains features for adding comment to the ticket
+ * based on latest state.
  */
 public class TcBotTriggerAndSignOffService {
     /** Logger. */
@@ -216,7 +215,8 @@ public class TcBotTriggerAndSignOffService {
 
     /**
      * Insert ticket status for all mutes, if they have ticket in description.
-     *  @param mutes Mutes.
+     *
+     * @param mutes Mutes.
      * @param tickets Tickets.
      * @param browseUrl JIRA URL for browsing tickets, e.g. https://issues.apache.org/jira/browse/
      */
@@ -241,8 +241,6 @@ public class TcBotTriggerAndSignOffService {
             }
         }
     }
-
-
 
     @NotNull public String triggerBuildsAndObserve(
         @Nullable String srvId,
@@ -288,11 +286,12 @@ public class TcBotTriggerAndSignOffService {
     ) {
         try {
             ticketFullName = ticketMatcher.resolveTicketFromBranch(srvId, ticketFullName, branchForTc);
-        } catch (BranchTicketMatcher.TicketNotFoundException e) {
+        }
+        catch (BranchTicketMatcher.TicketNotFoundException e) {
             logger.info("", e);
             return "JIRA ticket will not be notified after the tests are completed - " +
-                    "exception happened when server tried to get ticket ID from Pull Request [errMsg="
-                    + e.getMessage();
+                "exception happened when server tried to get ticket ID from Pull Request [errMsg="
+                + e.getMessage();
         }
 
         buildObserverProvider.get().observe(srvId, prov, ticketFullName, branchForTc, parentSuiteId, builds);
@@ -320,7 +319,8 @@ public class TcBotTriggerAndSignOffService {
 
         try {
             ticketFullName = ticketMatcher.resolveTicketFromBranch(srvId, ticketFullName, branchForTc);
-        } catch (BranchTicketMatcher.TicketNotFoundException e) {
+        }
+        catch (BranchTicketMatcher.TicketNotFoundException e) {
             logger.info("", e);
             return new SimpleResult("JIRA wasn't commented.<br>" + e.getMessage());
         }
@@ -331,8 +331,8 @@ public class TcBotTriggerAndSignOffService {
 
         if (Objects.nonNull(lastVisaReq) && lastVisaReq.isObserving())
             return new SimpleResult("Jira wasn't commented." +
-                    " \"Re-run possible blockers & Comment JIRA\" was triggered for current branch." +
-                    " Wait for the end or cancel exsiting observing.");
+                " \"Re-run possible blockers & Comment JIRA\" was triggered for current branch." +
+                " Wait for the end or cancel exsiting observing.");
 
         Visa visa = notifyJira(srvId, prov, suiteId, branchForTc, ticketFullName);
 
@@ -358,6 +358,9 @@ public class TcBotTriggerAndSignOffService {
 
         List<Ticket> paTickets = tickets.stream().filter(Ticket::isActiveContribution).collect(Collectors.toList());
 
+        IJiraServerConfig jiraCfg = jiraIntegration.config();
+        IGitHubConfig ghCfg = gitHubConnIgnited.config();
+
         List<ContributionToCheck> contribsList = requests.stream().map(pr -> {
             ContributionToCheck check = new ContributionToCheck();
             check.prNumber = pr.getNumber();
@@ -375,8 +378,6 @@ public class TcBotTriggerAndSignOffService {
                 check.prAuthorAvatarUrl = "";
             }
 
-            IJiraServerConfig jiraCfg = jiraIntegration.config();
-
             check.jiraIssueId = ticketMatcher.resolveTicketIdForPrBasedContrib(tickets, pr, jiraCfg);
 
             if (!Strings.isNullOrEmpty(check.jiraIssueId))
@@ -389,10 +390,10 @@ public class TcBotTriggerAndSignOffService {
 
         paTickets.forEach(ticket -> {
             String branch = ticketMatcher.resolveTcBranchForPrLess(ticket,
-                    jiraIntegration.config(),
-                    gitHubConnIgnited.config());
+                jiraCfg,
+                ghCfg);
 
-            if (branch == null)
+            if (Strings.isNullOrEmpty(branch))
                 return; // nothing to do if branch was not resolved
 
             String defBtForMaster = findDefaultBranchBuildType(tcIgn.serverId());
@@ -403,10 +404,20 @@ public class TcBotTriggerAndSignOffService {
             ContributionToCheck contribution = new ContributionToCheck();
 
             contribution.jiraIssueId = ticket.key;
-            contribution.jiraIssueUrl = jiraIntegration.generateTicketUrl( ticket.key);
+            contribution.jiraIssueUrl = jiraIntegration.generateTicketUrl(ticket.key);
             contribution.tcBranchName = branch;
 
-            contribution.prNumber = -ticket.keyWithoutProject(jiraIntegration.config().projectCodeForVisa());
+            if (branch.startsWith(ghCfg.gitBranchPrefix())) {
+                String branchTc = branch.substring(ghCfg.gitBranchPrefix().length());
+
+                try {
+                    contribution.prNumber = -Integer.valueOf(branchTc);
+                }
+                catch (NumberFormatException e) {
+                    logger.error("PR less contribution has invalid branch name", e);
+                }
+            }
+
             contribution.prTitle = ticket.fields.summary;
             contribution.prHtmlUrl = "";
             contribution.prTimeUpdate = ""; //todo ticket updateTime
@@ -420,8 +431,17 @@ public class TcBotTriggerAndSignOffService {
         return contribsList;
     }
 
-    @Nonnull private List<BuildRefCompacted> findBuildsForPr(String suiteId, String prId,
-        IGitHubConnIgnited ghConn, ITeamcityIgnited srv) {
+    /**
+     * @param suiteId Suite id.
+     * @param prId Pr id from {@link ContributionToCheck#prNumber}. Negative value imples branch number for PR-less.
+     * @param ghConn Gh connection.
+     * @param srv TC Server connection.
+     */
+    @Nonnull
+    private List<BuildRefCompacted> findBuildsForPr(String suiteId,
+        String prId,
+        IGitHubConnIgnited ghConn,
+        ITeamcityIgnited srv) {
 
         List<BuildRefCompacted> buildHist = srv.getAllBuildsCompacted(suiteId, branchForTcDefault(prId, ghConn));
 
@@ -455,6 +475,11 @@ public class TcBotTriggerAndSignOffService {
         return Collections.emptyList();
     }
 
+    /**
+     * @param prId Pr id from {@link ContributionToCheck#prNumber}. Negative value imples branch number to be used for
+     * PR-less contributions.
+     * @param srv Github integration.
+     */
     private String branchForTcDefault(String prId, IGitHubConnIgnited srv) {
         Integer prNum = Integer.valueOf(prId);
         if (prNum < 0)
@@ -474,7 +499,8 @@ public class TcBotTriggerAndSignOffService {
     /**
      * @param srvId Server id.
      * @param prov Prov.
-     * @param prId Pr id.
+     * @param prId Pr id from {@link ContributionToCheck#prNumber}. Negative value imples branch number (with
+     * appropriate prefix from GH config).
      */
     public Set<ContributionCheckStatus> contributionStatuses(String srvId, ICredentialsProv prov,
         String prId) {
@@ -509,7 +535,6 @@ public class TcBotTriggerAndSignOffService {
                 compositeBuildTypeIds.add(defBtForMaster);
         }
 
-
         for (String btId : compositeBuildTypeIds) {
             List<BuildRefCompacted> compBuilds = findBuildsForPr(btId, prId, ghConn, teamcity);
 
@@ -540,7 +565,7 @@ public class TcBotTriggerAndSignOffService {
      * @param srvId Server id.
      * @param suiteId Suite id.
      * @param builds Build references.
-     * @param ghConn
+     * @param ghConn GitHub integration.
      */
     public ContributionCheckStatus contributionStatus(String srvId, String suiteId, List<BuildRefCompacted> builds,
         ITeamcityIgnited teamcity, IGitHubConnIgnited ghConn, String prId) {
@@ -570,7 +595,7 @@ public class TcBotTriggerAndSignOffService {
 
         String observationsStatus = buildObserverProvider.get().getObservationStatus(new ContributionKey(srvId, status.resolvedBranch));
 
-        status.observationsStatus  = Strings.emptyToNull(observationsStatus);
+        status.observationsStatus = Strings.emptyToNull(observationsStatus);
 
         List<BuildRefCompacted> queuedSuites = builds.stream()
             .filter(t -> t.isNotCancelled(compactor))
@@ -600,11 +625,12 @@ public class TcBotTriggerAndSignOffService {
         return teamcity.host() + "viewQueued.html?itemId=" + ref.id();
     }
 
-    public CurrentVisaStatus currentVisaStatus(String srvId, ICredentialsProv prov, String buildTypeId, String tcBranch) {
+    public CurrentVisaStatus currentVisaStatus(String srvCode, ICredentialsProv prov, String buildTypeId,
+        String tcBranch) {
         CurrentVisaStatus status = new CurrentVisaStatus();
 
         List<SuiteCurrentStatus> suitesStatuses
-            = prChainsProcessor.getBlockersSuitesStatuses(buildTypeId, tcBranch, srvId, prov, SyncMode.NONE);
+            = prChainsProcessor.getBlockersSuitesStatuses(buildTypeId, tcBranch, srvCode, prov, SyncMode.NONE);
 
         if (suitesStatuses == null)
             return status;
@@ -620,21 +646,10 @@ public class TcBotTriggerAndSignOffService {
 
         return status;
     }
-   /**
-     * @param srvId Server id.
-     * @param prov Credentials.
-     * @param buildTypeId Suite name.
-     * @param branchForTc Branch for TeamCity.
-     * @param ticket JIRA ticket full name.
-     * @return {@code Visa} which contains info about JIRA notification.
-     */
-    //Visa notifyJira(String srvId, ICredentialsProv prov, String buildTypeId, String branchForTc, String ticket);
-
 
     /**
-     * Produce visa message(see {@link Visa}) based on passed
-     * parameters and publish it as a comment for specified ticket
-     * on Jira server.
+     * Produce visa message(see {@link Visa}) based on passed parameters and publish it as a comment for specified
+     * ticket on Jira server.
      *
      * @param srvId TC Server ID to take information about token from.
      * @param prov Credentials.
@@ -700,7 +715,6 @@ public class TcBotTriggerAndSignOffService {
 
         return new Visa(Visa.JIRA_COMMENTED, res, blockers);
     }
-
 
     /**
      * @param suites Suite Current Status.

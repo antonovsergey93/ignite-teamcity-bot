@@ -20,7 +20,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
-
 import org.apache.ignite.ci.IAnalyticsEnabledTeamcity;
 import org.apache.ignite.ci.analysis.FullChainRunCtx;
 import org.apache.ignite.ci.analysis.mode.LatestRebuildMode;
@@ -75,7 +74,7 @@ public class TrackedBranchChainsProcessor {
         final BranchTracked tracked = tcBotConfig.getTrackedBranches().getBranchMandatory(branchNn);
 
         tracked.chains.stream()
-            .filter(chainTracked -> creds.hasAccess(chainTracked.serverId))
+            .filter(chainTracked -> tcIgnitedProv.hasAccess(chainTracked.serverId, creds))
             .map(chainTracked -> {
                 final String srvId = chainTracked.serverId;
 
@@ -148,7 +147,7 @@ public class TrackedBranchChainsProcessor {
         final BranchTracked tracked = tcBotConfig.getTrackedBranches().getBranchMandatory(branchNn);
 
         tracked.chains.stream()
-            .filter(chainTracked -> creds.hasAccess(chainTracked.serverId))
+            .filter(chainTracked -> tcIgnitedProv.hasAccess(chainTracked.serverId, creds))
             .map(chainTracked -> {
                 final String srvId = chainTracked.serverId;
 

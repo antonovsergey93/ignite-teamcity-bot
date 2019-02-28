@@ -25,7 +25,10 @@ import org.junit.Test;
 
 import static org.apache.ignite.ci.analysis.RunStat.ChangesState.UNKNOWN;
 import static org.apache.ignite.ci.tcmodel.result.tests.TestOccurrence.STATUS_SUCCESS;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Issue detection test
@@ -119,7 +122,6 @@ public class DetectingFailureTest {
         assertEquals(firstFailedBuildId, buildId.intValue());
     }
 
-
     @Test
     public void detectNewContributedTestFailure() {
         RunStat statWithHist = new RunStat("");
@@ -151,7 +153,6 @@ public class DetectingFailureTest {
         assertEquals(firstFailedBuildId, buildId.intValue());
     }
 
-
     @Test
     public void detectSuiteFailureIsOnlyOnce() {
         RunStat stat = new RunStat("");
@@ -178,7 +179,6 @@ public class DetectingFailureTest {
 
         assertNotNull(buildId);
         assertEquals(firstFailedBuildId, buildId.intValue());
-
 
         for (int i = 0; i < 4; i++)
             stat.setBuildCriticalError(timedOutBuildCnt + firstFailedBuildId + i);
