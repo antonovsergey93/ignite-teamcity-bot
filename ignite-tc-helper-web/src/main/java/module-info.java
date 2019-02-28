@@ -1,11 +1,10 @@
-module tcbot {
+module org.apache.tcbot {
     exports org.apache.ignite.ci.web;
     requires ignite.slf4j;
     requires ignite.direct.io;
     requires ignite.indexing;
     requires annotations;
     requires slf4j.api;
-    requires aopalliance;
     requires jsr305;
     requires jetty.server;
     requires jetty.webapp;
