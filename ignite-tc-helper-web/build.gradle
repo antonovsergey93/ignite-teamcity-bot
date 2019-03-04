@@ -44,7 +44,9 @@ dependencies {
 
     compile group: 'org.apache.ignite', name: 'ignite-core', version: ignVer
     compile group: 'org.apache.ignite', name: 'ignite-slf4j', version: ignVer
-    compile group: 'org.apache.ignite', name: 'ignite-direct-io', version: ignVer
+    compile (group: 'org.apache.ignite', name: 'ignite-direct-io', version: ignVer) {
+        exclude group: 'org.apache.lucene'  // to remove "lucene-sandbox and analyzers-commons" package conflicts.
+    }
 
     compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVer
     compile group: 'org.slf4j', name: 'jul-to-slf4j', version: slf4jVer
@@ -94,6 +96,23 @@ dependencies {
     compile (group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0') {
         transitive = false
     }
+    /* give it try:
+     * <dependency>
+     *             <groupId>org.glassfish.jaxb</groupId>
+     *             <artifactId>jaxb-runtime</artifactId>
+     *             <version>2.4.0-b180608.0325</version>
+     *         </dependency>
+     *         <dependency>
+     *             <groupId>org.glassfish.jaxb</groupId>
+     *             <artifactId>jaxb-xjc</artifactId>
+     *             <version>2.4.0-b180608.0325</version>
+     *         </dependency>
+     *        <dependency>
+     *             <groupId>org.glassfish.jaxb</groupId>
+     *             <artifactId>jaxb-jxc</artifactId>
+     *             <version>2.4.0-b180608.0325</version>
+     *         </dependency>
+     */
 
 }
 
