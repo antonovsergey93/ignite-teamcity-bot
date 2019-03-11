@@ -114,6 +114,10 @@ function showContributionsTable(result, srvId, suiteId) {
                 "render": function (data, type, row, meta) {
                     if (type === 'display' && row.prNumber > 0) {
                         data = "<a href='" + data + "'>#" + row.prNumber + "</a>";
+
+                        if (type === 'display' && isDefinedAndFilled(row.prHeadCommit)) {
+                            data += " (" + row.prHeadCommit + ")";
+                        }
                     }
 
                     return data;
@@ -400,8 +404,15 @@ function showContributionStatus(status, prId, row, srvId, suiteIdSelected) {
     if (buildIsCompleted) {
         let finishedBranch = status.branchWithFinishedSuite;
 
-        tdForPr.html("<a id='showReportlink_" + prId + "' href='" + prShowHref(srvId, suiteIdSelected, finishedBranch) + "'>" +
-            "<button id='show_" + prId + "'>Show " + finishedBranch + " report</button></a>");
+        let reportLink = "<a id='showReportlink_" + prId + "' href='" + prShowHref(srvId, suiteIdSelected, finishedBranch) + "'>" +
+            "<button id='show_" + prId + "'>Show " + finishedBranch + " report</button>" +
+            "</a>";
+        if(isDefinedAndFilled(status.finishedSuiteCommit)) {
+            reportLink += "<br>(" + status.finishedSuiteCommit + ")";
+        }
+
+
+        tdForPr.html(reportLink);
 
         if (hasJiraIssue) {
             let jiraBtn = "<button onclick='" +

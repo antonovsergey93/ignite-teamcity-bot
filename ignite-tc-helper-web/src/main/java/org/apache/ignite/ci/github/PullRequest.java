@@ -19,9 +19,11 @@ package org.apache.ignite.ci.github;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import com.google.gson.annotations.SerializedName;
 import org.apache.ignite.ci.analysis.IVersionedEntity;
 import org.apache.ignite.ci.db.Persisted;
+import org.jetbrains.annotations.Nullable;
 
 /**
  *
@@ -29,6 +31,7 @@ import org.apache.ignite.ci.db.Persisted;
 @Persisted
 public class PullRequest implements IVersionedEntity {
     public static final String OPEN = "open";
+    public static final int INCLUDE_SHORT_VER = 7;
     /** Latest version. */
     private static final int LATEST_VERSION = 7;
 
@@ -157,4 +160,9 @@ public class PullRequest implements IVersionedEntity {
         return LATEST_VERSION;
     }
 
+    @Nullable public String lastCommitShaShort() {
+        String sha = head().sha();
+
+        return Strings.isNullOrEmpty(sha) ? null : sha.substring(0, INCLUDE_SHORT_VER);
+    }
 }
